@@ -36,8 +36,6 @@ target/
 application-*.yml
 application-*.yaml
 application-*.properties
-# Keep the main application.properties if needed
-!application.properties
 
 # === IntelliJ IDEA ===
 .idea/
