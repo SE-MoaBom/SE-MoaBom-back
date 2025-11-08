@@ -1,8 +1,11 @@
 package SE.demo.repository.User;
 
 import SE.demo.entity.User;
+import java.sql.PreparedStatement;
 import java.util.Optional;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.support.GeneratedKeyHolder;
+import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
 
 @Repository
@@ -17,9 +20,16 @@ public class JdbcUserRepository implements UserRepository {
     @Override
     public void saveUserInfo(User user) {
         String sql = "Insert into user(username,password) values(?,?)";
-        jdbcTemplate.update(sql,
-                user.getUsername(),
-                user.getPassword());
+        KeyHolder keyHolder = new GeneratedKeyHolder();
+
+        jdbcTemplate.update(connection -> {
+            PreparedStatement ps = connection.prepareStatement(sql, new String[]{"user_number"});
+            ps.setString(1, user.getUsername());
+            ps.setString(2, user.getPassword());
+            return ps;
+        }, keyHolder);
+
+        user.setUserNumber(keyHolder.getKey().intValue());
     }
 
     //로그인
