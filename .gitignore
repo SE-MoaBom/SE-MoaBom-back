@@ -31,11 +31,10 @@ build/
 # === Maven (if exists later) ===
 target/
 
-# === Spring Boot ===
-# (application-local.properties 등 개인 설정 제외 가능)
-application-*.yml
-application-*.yaml
-application-*.properties
+**/application.properties
+**/application-*.yml
+**/application-*.yaml
+
 
 # === IntelliJ IDEA ===
 .idea/
