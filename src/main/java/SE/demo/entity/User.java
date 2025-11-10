@@ -7,6 +7,6 @@ import lombok.Data;
 @Builder
 public class User {
     private int userNumber; //PK
-    private String username;
+    private String username; //ID라 생각
     private String password;
 }
