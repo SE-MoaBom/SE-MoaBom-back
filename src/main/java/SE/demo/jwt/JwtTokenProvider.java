@@ -1,4 +1,4 @@
-package SE.demo.jwt.util;
+package SE.demo.jwt;
 
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;

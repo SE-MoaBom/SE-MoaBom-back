@@ -1,4 +1,4 @@
-package SE.demo.repository.User;
+package SE.demo.repository.subscribe;
 
 import SE.demo.entity.Subscribe;
 import java.util.List;

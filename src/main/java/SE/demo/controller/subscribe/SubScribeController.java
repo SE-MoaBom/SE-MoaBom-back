@@ -1,7 +1,7 @@
-package SE.demo.controller;
+package SE.demo.controller.subscribe;
 
 import SE.demo.entity.Subscribe;
-import SE.demo.repository.User.SubScribeRepository;
+import SE.demo.repository.subscribe.SubScribeRepository;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;

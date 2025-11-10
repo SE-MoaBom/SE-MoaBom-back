@@ -1,7 +1,7 @@
-package SE.demo.controller;
+package SE.demo.controller.user;
 
 import SE.demo.entity.User;
-import SE.demo.jwt.util.JwtTokenProvider;
+import SE.demo.jwt.JwtTokenProvider;
 import SE.demo.repository.User.UserRepository;
 import java.util.Map;
 import java.util.Optional;
