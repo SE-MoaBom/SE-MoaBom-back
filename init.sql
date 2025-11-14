@@ -4,7 +4,7 @@ USE moabom;
 
 CREATE TABLE IF NOT EXISTS `User` (
     `user_id` BIGINT NOT NULL AUTO_INCREMENT,
-    `eamil` VARCHAR(50) NOT NULL UNIQUE,
+    `email` VARCHAR(50) NOT NULL UNIQUE,
     `password` VARCHAR(255) NOT NULL,
     PRIMARY KEY (`user_id`)
     );
@@ -66,6 +66,12 @@ CREATE TABLE IF NOT EXISTS `Wishlist` (
     UNIQUE KEY `unique_wish` (`user_id`, `program_id`)
     );
 
-INSERT INTO `User` (`name`, `password`) VALUES
-('wonbin@ajou.ac.kr', '1234'),
-('Ajou@ajou.ac.kr', '1234');
+INSERT INTO OTT (name, price, logo_url)
+VALUES ('Netflix', 15000, 'https://example.com/netflix_logo.png');
+
+INSERT INTO OTT (name, price, logo_url)
+VALUES ('Disney+', 12000, 'https://example.com/disney_logo.png');
+
+INSERT INTO OTT (name, price, logo_url)
+VALUES ('Watcha', 10000, 'https://example.com/watcha_logo.png');
+

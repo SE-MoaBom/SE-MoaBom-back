@@ -1,14 +1,17 @@
 package SE.demo.repository.subscribe;
 
-import SE.demo.entity.Subscribe;
+import SE.demo.dto.subscribe.MydetailSubscribeDto;
+import SE.demo.dto.subscribe.SubScribeRequestDto;
+import SE.demo.dto.subscribe.UpdateRequestDto;
+import SE.demo.entity.User;
 import java.util.List;
 
 public interface SubScribeRepository {
-    public Subscribe saveOttInfo(Subscribe subscribe);
+    void saveSubScribeInfo(User user, SubScribeRequestDto dto);
 
-    public List<Subscribe> getOttInfo(String username);
+    List<MydetailSubscribeDto> findMySubScribeInfo(User user);
 
-    public void updateOttInfo(Subscribe subscribe);
+    void updateMySubScribeInfo(User user, UpdateRequestDto dto, int subscribeId);
 
-    public void deleteOttInfo(Subscribe subscribe);
+    void deleteMySubScribeInfo(User user, int subscribeId);
 }

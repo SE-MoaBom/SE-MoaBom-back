@@ -1,6 +1,6 @@
 package SE.demo.controller.user;
 
-import SE.demo.dto.GetMeDto;
+import SE.demo.dto.user.GetMeDto;
 import SE.demo.entity.User;
 import SE.demo.exception.user.PasswordNotEqualException;
 import SE.demo.exception.user.UserDataAccessException;

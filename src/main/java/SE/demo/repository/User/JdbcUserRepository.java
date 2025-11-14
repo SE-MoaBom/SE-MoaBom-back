@@ -1,6 +1,6 @@
 package SE.demo.repository.User;
 
-import SE.demo.dto.GetMeDto;
+import SE.demo.dto.user.GetMeDto;
 import SE.demo.entity.User;
 import SE.demo.exception.user.PasswordNotEqualException;
 import SE.demo.exception.user.UserDataAccessException;
@@ -34,10 +34,15 @@ public class JdbcUserRepository implements UserRepository {
                 return ps;
             }, keyHolder);
 
+            if (keyHolder.getKey() == null) {
+                throw new RuntimeException("생성된 user_id를 가져올 수 없습니다.");
+            }
+
             user.setUserId(keyHolder.getKey().intValue());
         } catch (DuplicateKeyException e) {
             throw new DuplicateKeyException("이미 사용중인 이메일입니다.");
         } catch (Exception e) {
+            e.printStackTrace(); // 실제 예외 확인
             throw new UserDataAccessException("사용자 정보를 저장하는 도중 오류가 발생했습니다.(서버문제)");
         }
     }
@@ -45,7 +50,7 @@ public class JdbcUserRepository implements UserRepository {
     //로그인
     @Override
     public User getUserInfo(String email, String passwordInput) {
-        String sql = "SELECT * FROM user WHERE email = ?";
+        String sql = "SELECT * FROM User WHERE email = ?";
         try {
             // 1. 이메일로 사용자 조회
             User user = jdbcTemplate.queryForObject(

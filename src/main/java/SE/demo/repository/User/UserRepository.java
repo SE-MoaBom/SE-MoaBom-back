@@ -1,6 +1,6 @@
 package SE.demo.repository.User;
 
-import SE.demo.dto.GetMeDto;
+import SE.demo.dto.user.GetMeDto;
 import SE.demo.entity.User;
 
 public interface UserRepository {
