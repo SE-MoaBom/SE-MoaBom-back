@@ -6,8 +6,8 @@ import lombok.Data;
 @Data
 public class Subscribe {
     private int subscribeId;
-    private int userNumber;
-    private String ottName;
+    private int userId;
+    private int ottId;
     private LocalDate startDate;
     private LocalDate endDate;
 }

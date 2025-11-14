@@ -1,8 +1,13 @@
 package SE.demo.repository.User;
 
+import SE.demo.dto.GetMeDto;
 import SE.demo.entity.User;
+import SE.demo.exception.user.PasswordNotEqualException;
+import SE.demo.exception.user.UserDataAccessException;
+import SE.demo.exception.user.UserNotFoundException;
 import java.sql.PreparedStatement;
-import java.util.Optional;
+import org.springframework.dao.DuplicateKeyException;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
@@ -19,44 +24,54 @@ public class JdbcUserRepository implements UserRepository {
     //회원가입
     @Override
     public void saveUserInfo(User user) {
-        String sql = "Insert into user(username,password) values(?,?)";
+        String sql = "Insert into User(email,password) values(?,?)";
         KeyHolder keyHolder = new GeneratedKeyHolder();
+        try {
+            jdbcTemplate.update(connection -> {
+                PreparedStatement ps = connection.prepareStatement(sql, new String[]{"user_id"});
+                ps.setString(1, user.getEmail());
+                ps.setString(2, user.getPassword());
+                return ps;
+            }, keyHolder);
 
-        jdbcTemplate.update(connection -> {
-            PreparedStatement ps = connection.prepareStatement(sql, new String[]{"user_number"});
-            ps.setString(1, user.getUsername());
-            ps.setString(2, user.getPassword());
-            return ps;
-        }, keyHolder);
-
-        user.setUserNumber(keyHolder.getKey().intValue());
+            user.setUserId(keyHolder.getKey().intValue());
+        } catch (DuplicateKeyException e) {
+            throw new DuplicateKeyException("이미 사용중인 이메일입니다.");
+        } catch (Exception e) {
+            throw new UserDataAccessException("사용자 정보를 저장하는 도중 오류가 발생했습니다.(서버문제)");
+        }
     }
 
     //로그인
     @Override
-    public Optional<User> getUserInfo(String username, String passwordInput) {
-        String sql = "SELECT * FROM user WHERE username = ?";
-
+    public User getUserInfo(String email, String passwordInput) {
+        String sql = "SELECT * FROM user WHERE email = ?";
         try {
+            // 1. 이메일로 사용자 조회
             User user = jdbcTemplate.queryForObject(
                     sql,
-                    (rs, rowNum) -> {
-                        String dbPassword = rs.getString("password");
-                        if (dbPassword.equals(passwordInput)) { // 나중에 BCrypt 적용
-                            return User.builder()
-                                    .userNumber(rs.getInt("user_number"))
-                                    .username(rs.getString("username"))
-                                    .password(dbPassword)
-                                    .build();
-                        }
-                        return null;
-                    },
-                    username
+                    (rs, rowNum) -> User.builder()
+                            .userId(rs.getInt("user_id"))
+                            .email(rs.getString("email"))
+                            .password(rs.getString("password"))
+                            .build(),
+                    email
             );
-
-            return Optional.ofNullable(user);
+            if (!user.getPassword().equals(passwordInput)) {
+                throw new PasswordNotEqualException("비밀번호가 일치하지 않습니다.");
+            }
+            return user;
+        } catch (EmptyResultDataAccessException e) {
+            throw new UserNotFoundException("존재하지 않는 이메일입니다.");
+        } catch (PasswordNotEqualException e) { //exception에 잡히니까 다시 던져줌
+            throw e;
         } catch (Exception e) {
-            return Optional.empty();
+            throw new UserDataAccessException("사용자 정보를 가져오는 도중 오류가 발생했습니다.(서버문제)");
         }
+    }
+
+    @Override
+    public GetMeDto getMeDto() {
+        return null;
     }
 }

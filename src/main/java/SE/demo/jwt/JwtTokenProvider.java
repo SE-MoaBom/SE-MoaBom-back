@@ -1,5 +1,7 @@
 package SE.demo.jwt;
 
+import SE.demo.entity.User;
+import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.MalformedJwtException;
@@ -25,9 +27,11 @@ public class JwtTokenProvider {
         this.key = Keys.hmacShaKeyFor(secretKey.getBytes(StandardCharsets.UTF_8));
     }
 
-    public String generateToken(String username) {
+    public String generateToken(User user) {
+        Claims claims = Jwts.claims().setSubject(user.getEmail());
+        claims.put("userId", user.getUserId());
         return Jwts.builder()
-                .setSubject(username) // 사용자 이름 저장
+                .setClaims(claims)
                 .setIssuedAt(new Date()) //발급 시간
                 .setExpiration(new Date(System.currentTimeMillis() + EXPIRATION_TIME)) //만료 시간
                 .signWith(key, SignatureAlgorithm.HS256) //서명
@@ -50,12 +54,16 @@ public class JwtTokenProvider {
         return false;
     }
 
-    public String getUsername(String token) {
-        return Jwts.parserBuilder()
+    public User getUserFromToken(String token) {
+        Claims claims = Jwts.parserBuilder()
                 .setSigningKey(key)
                 .build()
                 .parseClaimsJws(token)
-                .getBody()
-                .getSubject();
+                .getBody();
+        return User.builder()
+                .userId((Integer) claims.get("userId"))
+                .email(claims.getSubject())
+                .password((String) claims.get("password"))
+                .build();
     }
 }

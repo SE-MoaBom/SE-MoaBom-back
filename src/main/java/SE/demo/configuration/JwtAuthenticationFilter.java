@@ -1,5 +1,6 @@
 package SE.demo.configuration;
 
+import SE.demo.entity.User;
 import SE.demo.jwt.JwtTokenProvider;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -39,12 +40,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             String token = header.substring(7); // "Bearer " 제거
 
             if (jwtTokenProvider.validateToken(token)) {
-                String username = jwtTokenProvider.getUsername(token);
+                User userFromToken = jwtTokenProvider.getUserFromToken(token);
 
                 UsernamePasswordAuthenticationToken auth =
-                        new UsernamePasswordAuthenticationToken(username, null, new ArrayList<>());
+                        new UsernamePasswordAuthenticationToken(userFromToken, null, new ArrayList<>());
                 auth.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-
                 SecurityContextHolder.getContext().setAuthentication(auth);
             } else {
                 // 토큰이 유효하지 않으면 401 반환
