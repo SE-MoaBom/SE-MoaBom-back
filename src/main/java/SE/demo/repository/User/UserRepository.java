@@ -1,10 +1,12 @@
 package SE.demo.repository.User;
 
+import SE.demo.dto.user.GetMeDto;
 import SE.demo.entity.User;
-import java.util.Optional;
 
 public interface UserRepository {
-    public void saveUserInfo(User user);
+    void saveUserInfo(User user);
 
-    public Optional<User> getUserInfo(String username, String password);
+    User getUserInfo(String username, String password);
+
+    GetMeDto getMeDto();
 }
