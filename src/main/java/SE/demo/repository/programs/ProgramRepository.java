@@ -1,6 +1,9 @@
 package SE.demo.repository.programs;
 
+import SE.demo.dto.programs.AvailabilityDto;
+import SE.demo.dto.programs.ProgramDetailResponseDto;
 import SE.demo.dto.programs.ProgramResponseDto;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -121,5 +124,54 @@ public class ProgramRepository {
             paramList.add(status);
         }
         return jdbcTemplate.queryForObject(sql.toString(), paramList.toArray(), Integer.class);
+    }
+
+    public ProgramDetailResponseDto getProgramDetail(long programId) {
+        String sql =
+                "SELECT p.program_id, p.title, p.description, p.thumbnail_url, p.backdrop_url, " +
+                        "p.genre, p.running_time, p.ranking, " +
+                        "CASE " +
+                        "  WHEN pa.release_date IS NULL OR CURDATE() < pa.release_date THEN 'UPCOMING' " +
+                        "  WHEN pa.expire_date IS NULL OR CURDATE() <= pa.expire_date THEN 'EXPIRING' " +
+                        "  ELSE NULL " +
+                        "END AS status " +
+                        "FROM Program p " +
+                        "LEFT JOIN Program_Availability pa ON p.program_id = pa.program_id " +
+                        "WHERE p.program_id = ? " +
+                        "LIMIT 1";
+
+        return jdbcTemplate.queryForObject(sql, new Object[]{programId}, (rs, rowNum) -> {
+            ProgramDetailResponseDto dto = new ProgramDetailResponseDto();
+            dto.setProgramId(rs.getLong("program_id"));
+            dto.setTitle(rs.getString("title"));
+            dto.setDescription(rs.getString("description"));
+            dto.setThumbnailUrl(rs.getString("thumbnail_url"));
+            dto.setBackdropUrl(rs.getString("backdrop_url"));
+            dto.setGenre(rs.getString("genre"));
+            dto.setRunningTime(rs.getInt("running_time"));
+
+            int ranking = rs.getInt("ranking");
+            dto.setRanking(rs.wasNull() ? null : ranking);
+
+            dto.setStatus(rs.getString("status"));
+
+            return dto;
+        });
+    }
+
+    public List<AvailabilityDto> findAvailability(long programId) {
+        String sql =
+                "SELECT pa.ott_id, o.logo_url, pa.release_date, pa.expire_date "
+                        + "from Program_Availability pa " +
+                        "left join OTT o on pa.ott_id=o.ott_id " +
+                        "WHERE pa.program_id=?";
+        return jdbcTemplate.query(sql, new Object[]{programId}, (rs, rowNum) -> {
+            AvailabilityDto dto = new AvailabilityDto();
+            dto.setOttId(rs.getLong("ott_id"));
+            dto.setLogoUrl(rs.getString("logo_url"));
+            dto.setReleaseDate(rs.getObject("release_date", LocalDate.class));
+            dto.setExpireDate(rs.getObject("expire_date", LocalDate.class));
+            return dto;
+        });
     }
 }
