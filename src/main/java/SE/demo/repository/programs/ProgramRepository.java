@@ -22,13 +22,18 @@ public class ProgramRepository {
             int page,
             int size
     ) {
-        //status -> null 인 경우에 임의로
         StringBuilder sql = new StringBuilder(
                 "SELECT p.program_id, p.title, p.description, p.thumbnail_url, p.backdrop_url, p.ranking, " +
                         "p.genre, p.running_time, " +
-                        "CASE " +
-                        "  WHEN pa.release_date IS NULL OR CURDATE() < pa.release_date THEN 'UPCOMING' " +
-                        "  WHEN pa.expire_date IS NULL OR CURDATE() <= pa.expire_date THEN 'EXPIRING' " +
+                        "CASE MAX(" +
+                        "  CASE " +
+                        "    WHEN pa.release_date IS NOT NULL THEN 3 " +
+                        "    WHEN pa.expire_date IS NOT NULL THEN 2 " +
+                        "    ELSE 1 " +
+                        "  END" +
+                        ") " +
+                        "  WHEN 3 THEN 'UPCOMING' " +
+                        "  WHEN 2 THEN 'EXPIRING' " +
                         "  ELSE NULL " +
                         "END AS status " +
                         "FROM Program p " +
@@ -42,14 +47,15 @@ public class ProgramRepository {
         }
         if (status != null && !status.equals("ALL")) {
             sql.append(" AND (CASE " +
-                    "WHEN CURDATE() < COALESCE(pa.release_date, '9999-12-31') THEN 'UPCOMING' " +
-                    "WHEN CURDATE() BETWEEN COALESCE(pa.release_date, '1000-01-01') AND COALESCE(pa.expire_date, '9999-12-31') THEN 'EXPIRING' "
-                    +
-                    "ELSE NULL END) = ?");
+                    "WHEN pa.release_date IS NOT NULL THEN 'UPCOMING' " +
+                    "WHEN pa.expire_date IS NOT NULL THEN 'EXPIRING' " +
+                    "ELSE 'AVAILABLE' END) = ?");
             paramList.add(status);
         }
+
+        sql.append(" GROUP BY p.program_id");
+
         if ("RANKING".equals(sort)) {
-            // 랭킹 없는 작품은 마지막으로 배치하고, 그 다음 id 순
             sql.append(" ORDER BY COALESCE(p.ranking,99999) ASC, p.program_id ASC");
         } else {
             sql.append(" ORDER BY p.program_id ASC");
@@ -65,7 +71,6 @@ public class ProgramRepository {
                 (rs, rowNum) -> {
                     ProgramDetailResponseDto dto = new ProgramDetailResponseDto();
 
-                    // program_id 처리 (nullable 고려)
                     long id = rs.getLong("program_id");
                     dto.setProgramId(rs.wasNull() ? null : id);
 
@@ -76,12 +81,11 @@ public class ProgramRepository {
                     dto.setGenre(rs.getString("genre"));
                     dto.setRunningTime(rs.getInt("running_time"));
 
-                    // ranking 처리 (nullable)
                     int ranking = rs.getInt("ranking");
                     dto.setRanking(rs.wasNull() ? null : ranking);
 
                     dto.setStatus(rs.getString("status"));
-                    dto.setWishlistId(null); // Service에서 token 기반으로 채워줄 수 있음
+                    dto.setWishlistId(null);
 
                     return dto;
                 }
@@ -94,18 +98,17 @@ public class ProgramRepository {
         try {
             return jdbcTemplate.queryForObject(
                     sql,
-                    new Object[]{userId, programId},  // 파라미터 바인딩
-                    Long.class                        // 반환 타입
+                    new Object[]{userId, programId},
+                    Long.class
             );
         } catch (EmptyResultDataAccessException e) {
-            // 조회 결과가 없으면 null 반환
             return null;
         }
     }
 
     public int countPrograms(String keyword, String status) {
         StringBuilder sql = new StringBuilder(
-                "SELECT COUNT(*) FROM Program p " +
+                "SELECT COUNT(DISTINCT p.program_id) FROM Program p " +
                         "LEFT JOIN Program_Availability pa on p.program_id = pa.program_id " +
                         "WHERE 1=1"
         );
@@ -116,10 +119,9 @@ public class ProgramRepository {
         }
         if (status != null && !status.equals("ALL")) {
             sql.append(" AND (CASE " +
-                    "WHEN CURDATE() < COALESCE(pa.release_date, '9999-12-31') THEN 'UPCOMING' " +
-                    "WHEN CURDATE() BETWEEN COALESCE(pa.release_date, '1000-01-01') AND COALESCE(pa.expire_date, '9999-12-31') THEN 'EXPIRING' "
-                    +
-                    "ELSE NULL END) = ?");
+                    "WHEN pa.release_date IS NOT NULL THEN 'UPCOMING' " +
+                    "WHEN pa.expire_date IS NOT NULL THEN 'EXPIRING' " +
+                    "ELSE 'AVAILABLE' END) = ?");
             paramList.add(status);
         }
         return jdbcTemplate.queryForObject(sql.toString(), paramList.toArray(), Integer.class);
@@ -129,15 +131,21 @@ public class ProgramRepository {
         String sql =
                 "SELECT p.program_id, p.title, p.description, p.thumbnail_url, p.backdrop_url, " +
                         "p.genre, p.running_time, p.ranking, " +
-                        "CASE " +
-                        "  WHEN pa.release_date IS NULL OR CURDATE() < pa.release_date THEN 'UPCOMING' " +
-                        "  WHEN pa.expire_date IS NULL OR CURDATE() <= pa.expire_date THEN 'EXPIRING' " +
+                        "CASE MAX(" +
+                        "  CASE " +
+                        "    WHEN pa.release_date IS NOT NULL THEN 3 " +
+                        "    WHEN pa.expire_date IS NOT NULL THEN 2 " +
+                        "    ELSE 1 " +
+                        "  END" +
+                        ") " +
+                        "  WHEN 3 THEN 'UPCOMING' " +
+                        "  WHEN 2 THEN 'EXPIRING' " +
                         "  ELSE NULL " +
                         "END AS status " +
                         "FROM Program p " +
                         "LEFT JOIN Program_Availability pa ON p.program_id = pa.program_id " +
                         "WHERE p.program_id = ? " +
-                        "LIMIT 1";
+                        "GROUP BY p.program_id";
 
         return jdbcTemplate.queryForObject(sql, new Object[]{programId}, (rs, rowNum) -> {
             ProgramDetailResponseDto dto = new ProgramDetailResponseDto();
