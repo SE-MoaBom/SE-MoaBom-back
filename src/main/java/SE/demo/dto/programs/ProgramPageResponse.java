@@ -10,5 +10,5 @@ public class ProgramPageResponse {
     private int page;
     private int size;
     private int totalpages;
-    private List<ProgramResponseDto> results;
+    private List<ProgramDetailResponseDto> results;
 }

@@ -3,7 +3,6 @@ package SE.demo.service.programs;
 import SE.demo.dto.programs.AvailabilityDto;
 import SE.demo.dto.programs.ProgramDetailResponseDto;
 import SE.demo.dto.programs.ProgramPageResponse;
-import SE.demo.dto.programs.ProgramResponseDto;
 import SE.demo.entity.User;
 import SE.demo.jwt.JwtTokenProvider;
 import SE.demo.repository.programs.ProgramRepository;
@@ -31,16 +30,23 @@ public class ProgramService {
             User userFromToken = tokenProvider.getUserFromToken(token);
             userId = userFromToken.getUserId();
         }
-        List<ProgramResponseDto> programResponseDtos = programRepository.searchPrograms(keyword, status, sort, page,
+        List<ProgramDetailResponseDto> programDetailResponseDtos = programRepository.searchPrograms(keyword, status, sort, page,
                 size);
 
         //각 프로그램에 wishlist 채워넣음
         if (userId != null) {
-            for (ProgramResponseDto programResponseDto : programResponseDtos) {
+            for (ProgramDetailResponseDto programResponseDto : programDetailResponseDtos) {
                 Long wishlist = programRepository.findWishList(userId, programResponseDto.getProgramId());
                 programResponseDto.setWishlistId(wishlist);
             }
         }
+
+        // 각 프로그램에 availability 채워넣음
+        for (ProgramDetailResponseDto programResponseDto : programDetailResponseDtos) {
+            List<AvailabilityDto> availability = programRepository.findAvailability(programResponseDto.getProgramId());
+            programResponseDto.setAvailability(availability);
+        }
+
         //전체 페이지 계산
         int totalItems = programRepository.countPrograms(keyword, status);
         int totalPages = (int) Math.ceil((double) totalItems / (double) size);
@@ -48,7 +54,7 @@ public class ProgramService {
         programPageResponse.setPage(page);
         programPageResponse.setSize(totalItems);
         programPageResponse.setTotalpages(totalPages);
-        programPageResponse.setResults(programResponseDtos);
+        programPageResponse.setResults(programDetailResponseDtos);
         return programPageResponse;
     }
 
