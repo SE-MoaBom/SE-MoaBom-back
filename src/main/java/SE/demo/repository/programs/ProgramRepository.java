@@ -2,7 +2,6 @@ package SE.demo.repository.programs;
 
 import SE.demo.dto.programs.AvailabilityDto;
 import SE.demo.dto.programs.ProgramDetailResponseDto;
-import SE.demo.dto.programs.ProgramResponseDto;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -16,7 +15,7 @@ import org.springframework.stereotype.Repository;
 public class ProgramRepository {
     private final JdbcTemplate jdbcTemplate;
 
-    public List<ProgramResponseDto> searchPrograms(
+    public List<ProgramDetailResponseDto> searchPrograms(
             String keyword,
             String status,
             String sort,
@@ -64,7 +63,7 @@ public class ProgramRepository {
                 sql.toString(),
                 paramList.toArray(),
                 (rs, rowNum) -> {
-                    ProgramResponseDto dto = new ProgramResponseDto();
+                    ProgramDetailResponseDto dto = new ProgramDetailResponseDto();
 
                     // program_id 처리 (nullable 고려)
                     long id = rs.getLong("program_id");
@@ -79,7 +78,7 @@ public class ProgramRepository {
 
                     // ranking 처리 (nullable)
                     int ranking = rs.getInt("ranking");
-                    dto.setRank(rs.wasNull() ? null : ranking);
+                    dto.setRanking(rs.wasNull() ? null : ranking);
 
                     dto.setStatus(rs.getString("status"));
                     dto.setWishlistId(null); // Service에서 token 기반으로 채워줄 수 있음
