@@ -65,13 +65,3 @@ CREATE TABLE IF NOT EXISTS `Wishlist` (
     FOREIGN KEY (`program_id`) REFERENCES `Program`(`program_id`) ON DELETE CASCADE,
     UNIQUE KEY `unique_wish` (`user_id`, `program_id`)
     );
-
-INSERT INTO OTT (name, price, logo_url)
-VALUES ('Netflix', 15000, 'https://example.com/netflix_logo.png');
-
-INSERT INTO OTT (name, price, logo_url)
-VALUES ('Disney+', 12000, 'https://example.com/disney_logo.png');
-
-INSERT INTO OTT (name, price, logo_url)
-VALUES ('Watcha', 10000, 'https://example.com/watcha_logo.png');
-
