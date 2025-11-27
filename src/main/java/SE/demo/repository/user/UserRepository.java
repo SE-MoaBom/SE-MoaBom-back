@@ -1,4 +1,4 @@
-package SE.demo.repository.User;
+package SE.demo.repository.user;
 
 import SE.demo.dto.user.GetMeDto;
 import SE.demo.entity.User;

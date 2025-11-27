@@ -1,6 +1,5 @@
 package SE.demo.configuration;
 
-import java.util.Arrays;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -10,6 +9,8 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+
+import java.util.Arrays;
 
 @Configuration
 @RequiredArgsConstructor
@@ -34,7 +35,16 @@ public class SecurityConfig {
         http.csrf(csrf -> csrf.disable())
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/auth/signup", "/auth/login", "/otts", "/programs", "/programs/**")
+                        .requestMatchers(
+                                "/auth/signup",
+                                "/auth/login",
+                                "/otts",
+                                "/programs",
+                                "/programs/**",
+                                "/swagger-ui.html",
+                                "/v3/api-docs/**",
+                                "/swagger-ui/**"
+                        )
                         .permitAll()
                         .anyRequest().authenticated()
 
