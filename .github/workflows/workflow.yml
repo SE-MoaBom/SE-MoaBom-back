@@ -15,9 +15,7 @@ jobs:
           port: 22
           script: |
             cd ~/SE-MoaBom-back
-            git pull origin main
+            git pull origin main --rebase
             ./gradlew clean build -x test
-            pgrep -f "demo-0.0.1-SNAPSHOT.jar" | xargs -r kill -9 || true
-            sleep 5
+            pgrep -f "java -jar.*demo-0.0.1-SNAPSHOT.[j]ar" | xargs -r kill -9 || true
             nohup java -jar build/libs/*SNAPSHOT.jar > app.log 2>&1 < /dev/null &
-            sleep 10

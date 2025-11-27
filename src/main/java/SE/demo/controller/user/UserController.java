@@ -40,6 +40,7 @@ public class UserController {
             requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(content = @Content(schema = @Schema(implementation = LoginRequestDto.class)))
     )
     @ApiResponse(responseCode = "201", content = @Content())
+    @ApiResponse(responseCode = "400", content = @Content(), description = "Already signed up")
     public ResponseEntity<?> signup(@RequestBody User user) {
         try {
             userRepository.saveUserInfo(user);
