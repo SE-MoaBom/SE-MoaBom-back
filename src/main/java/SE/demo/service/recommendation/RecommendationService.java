@@ -29,8 +29,6 @@ public class RecommendationService {
         List<OttDto> otts = ottRepository.getOttList();
         Map<Long, OttDto> ottMap = otts.stream().collect(Collectors.toMap(o -> (long) o.getOttId(), o -> o));
 
-        int totalOriginalCost = calculateOriginalCostWithBacktracking(wishlist, otts);
-
         List<RecommendationActionDto> actions = new ArrayList<>();
         int totalRecommendedCost = 0;
 
@@ -112,61 +110,27 @@ public class RecommendationService {
             }
         }
 
+        int totalOriginalCost = calculateSimplifiedOriginalCost(actions, otts);
         int savings = Math.max(0, totalOriginalCost - totalRecommendedCost);
         return new RecommendationResponseDto(savings, actions);
     }
 
-    private int calculateOriginalCostWithBacktracking(List<WishlistProgramDto> wishlist, List<OttDto> allOtts) {
-        if (wishlist.isEmpty()) {
+    private int calculateSimplifiedOriginalCost(List<RecommendationActionDto> actions, List<OttDto> allOtts) {
+        if (actions.isEmpty()) {
             return 0;
         }
 
-        Set<Long> wishlistProgramIds = wishlist.stream()
-                .map(WishlistProgramDto::getProgramId)
+        int durationInMonths = actions.size();
+
+        Set<String> recommendedOttNames = actions.stream()
+                .map(RecommendationActionDto::getOttName)
                 .collect(Collectors.toSet());
 
-        Map<Long, Set<Long>> ottCoverablePrograms = new HashMap<>();
-        for (OttDto ott : allOtts) {
-            Set<Long> coverable = new HashSet<>();
-            for (WishlistProgramDto program : wishlist) {
-                if (program.getAvailabilities().stream().anyMatch(a -> a.getOttId().equals((long) ott.getOttId()))) {
-                    coverable.add(program.getProgramId());
-                }
-            }
-            ottCoverablePrograms.put((long) ott.getOttId(), coverable);
-        }
+        int monthlyCostOfAllRecommendedOtts = allOtts.stream()
+                .filter(ott -> recommendedOttNames.contains(ott.getName()))
+                .mapToInt(OttDto::getPrice)
+                .sum();
 
-        int[] minCost = {Integer.MAX_VALUE};
-        backtrack(0, 0, new HashSet<>(), allOtts, wishlistProgramIds, ottCoverablePrograms, minCost);
-
-        return minCost[0] == Integer.MAX_VALUE ? 0 : minCost[0];
-    }
-
-    private void backtrack(int ottIndex, int currentCost, Set<Long> coveredPrograms, List<OttDto> allOtts, Set<Long> wishlistProgramIds, Map<Long, Set<Long>> ottCoverablePrograms, int[] minCost) {
-        if (currentCost >= minCost[0]) {
-            return;
-        }
-
-        if (coveredPrograms.containsAll(wishlistProgramIds)) {
-            minCost[0] = currentCost;
-            return;
-        }
-
-        if (ottIndex == allOtts.size()) {
-            return;
-        }
-
-        OttDto currentOtt = allOtts.get(ottIndex);
-        long currentOttId = currentOtt.getOttId();
-        Set<Long> programsToAdd = ottCoverablePrograms.get(currentOttId);
-
-        Set<Long> newCoveredPrograms = new HashSet<>(coveredPrograms);
-        boolean isUseful = newCoveredPrograms.addAll(programsToAdd);
-
-        if (isUseful) {
-            backtrack(ottIndex + 1, currentCost + currentOtt.getPrice(), newCoveredPrograms, allOtts, wishlistProgramIds, ottCoverablePrograms, minCost);
-        }
-
-        backtrack(ottIndex + 1, currentCost, coveredPrograms, allOtts, wishlistProgramIds, ottCoverablePrograms, minCost);
+        return monthlyCostOfAllRecommendedOtts * durationInMonths;
     }
 }
