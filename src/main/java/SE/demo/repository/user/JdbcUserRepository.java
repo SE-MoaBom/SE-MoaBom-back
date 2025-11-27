@@ -1,17 +1,18 @@
-package SE.demo.repository.User;
+package SE.demo.repository.user;
 
 import SE.demo.dto.user.GetMeDto;
 import SE.demo.entity.User;
 import SE.demo.exception.user.PasswordNotEqualException;
 import SE.demo.exception.user.UserDataAccessException;
 import SE.demo.exception.user.UserNotFoundException;
-import java.sql.PreparedStatement;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
+
+import java.sql.PreparedStatement;
 
 @Repository
 public class JdbcUserRepository implements UserRepository {

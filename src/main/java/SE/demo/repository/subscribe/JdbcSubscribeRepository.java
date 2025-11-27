@@ -6,16 +6,17 @@ import SE.demo.dto.subscribe.UpdateRequestDto;
 import SE.demo.entity.Subscribe;
 import SE.demo.entity.User;
 import SE.demo.exception.subscribe.CannotFindSubscribeInfo;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
+
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.List;
 
 @Repository
 @RequiredArgsConstructor
@@ -62,8 +63,8 @@ public class JdbcSubscribeRepository implements SubScribeRepository {
                 "WHERE s.user_id = ?";
         return jdbcTemplate.query(sql, new Object[]{userId}, (rs, rowNum) -> {
             MydetailSubscribeDto dto = new MydetailSubscribeDto();
-            dto.setSubscribeID(rs.getInt("subscribe_id"));
-            dto.setOttID(rs.getInt("ott_id"));
+            dto.setSubscribeId(rs.getInt("subscribe_id"));
+            dto.setOttId(rs.getInt("ott_id"));
             dto.setOttName(rs.getString("name"));
             dto.setLogoUrl(rs.getString("logo_url"));
             dto.setStartDate(rs.getDate("start_date") != null ?
