@@ -1,25 +1,21 @@
 package SE.demo.jwt;
 
 import SE.demo.entity.User;
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.ExpiredJwtException;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.MalformedJwtException;
-import io.jsonwebtoken.SignatureAlgorithm;
-import io.jsonwebtoken.UnsupportedJwtException;
+import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.PostConstruct;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
+
 import java.nio.charset.StandardCharsets;
 import java.security.Key;
 import java.util.Date;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Component;
 
 @Component
 public class JwtTokenProvider {
     @Value("${jwt.secret}")
     private String secretKey;
-    private static final long EXPIRATION_TIME = 1000L * 60 * 15; //15분
+    private static final long EXPIRATION_TIME = 1000L * 60 * 60 * 12; // 12시간
     private Key key;
 
     @PostConstruct
