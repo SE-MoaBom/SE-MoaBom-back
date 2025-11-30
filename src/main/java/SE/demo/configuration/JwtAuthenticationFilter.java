@@ -19,7 +19,6 @@ import java.util.ArrayList;
 @Component
 @Slf4j
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
-    // JwtTokenProvider 주입
     private final JwtTokenProvider jwtTokenProvider;
 
     public JwtAuthenticationFilter(JwtTokenProvider jwtTokenProvider) {
@@ -30,18 +29,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
-        String path = request.getRequestURI();
-
-        if (path.equals("/") || path.equals("/auth/signup") || path.equals("/auth/login") || path.equals("/otts")
-                || path.startsWith("/swagger-ui") || path.startsWith("/v3/api-docs")) {
-            filterChain.doFilter(request, response);
-            return;
-        }
-
         String header = request.getHeader("Authorization");
 
         if (header != null && header.startsWith("Bearer ")) {
-            String token = header.substring(7); // "Bearer " 제거
+            String token = header.substring(7);
 
             if (jwtTokenProvider.validateToken(token)) {
                 User userFromToken = jwtTokenProvider.getUserFromToken(token);
@@ -51,7 +42,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 auth.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                 SecurityContextHolder.getContext().setAuthentication(auth);
             } else {
-                // 토큰이 유효하지 않으면 401 반환하고 필터 체인 중단
                 log.info("유효하지 않은 토큰");
                 response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                 return;
