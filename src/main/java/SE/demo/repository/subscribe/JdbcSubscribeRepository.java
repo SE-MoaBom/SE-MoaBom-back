@@ -39,7 +39,11 @@ public class JdbcSubscribeRepository implements SubScribeRepository {
     //구독 정보 등록
     public void saveSubScribeInfo(User user, SubScribeRequestDto requestDto) {
         KeyHolder keyHolder = new GeneratedKeyHolder();
-        String sql = "INSERT INTO Subscribe (user_id, ott_id, start_date, end_date) VALUES (?, ?, ?, ?)";
+        String sql = "INSERT INTO Subscribe (user_id, ott_id, start_date, end_date) " +
+                "VALUES (?, ?, ?, ?) " +
+                "ON DUPLICATE KEY UPDATE " +
+                "start_date = VALUES(start_date), " +
+                "end_date = VALUES(end_date)";
         jdbcTemplate.update(connection -> {
             PreparedStatement ps = connection.prepareStatement(sql, PreparedStatement.RETURN_GENERATED_KEYS);
             ps.setInt(1, user.getUserId());
